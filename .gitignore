@@ -328,3 +328,6 @@ dump.rdb
 django_store_assessment/media/
 
 .pytest_cache/
+
+.env
+.idea/
