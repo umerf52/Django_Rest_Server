@@ -30,6 +30,7 @@ urlpatterns += [
         SpectacularSwaggerView.as_view(url_name="api-schema"),
         name="api-docs",
     ),
+    path("api/", include("django_store_assessment.stores.urls")),
 ]
 
 if settings.DEBUG:
