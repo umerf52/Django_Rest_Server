@@ -5,13 +5,13 @@ from django.db import models
 
 
 WEEKDAYS = [
-  (1, "Monday"),
-  (2, "Tuesday"),
-  (3, "Wednesday"),
-  (4, "Thursday"),
-  (5, "Friday"),
-  (6, "Saturday"),
-  (7, "Sunday"),
+    (1, "Monday"),
+    (2, "Tuesday"),
+    (3, "Wednesday"),
+    (4, "Thursday"),
+    (5, "Friday"),
+    (6, "Saturday"),
+    (7, "Sunday"),
 ]
 
 
@@ -21,8 +21,8 @@ class OpeningHours(models.Model):
     to_hour = models.TimeField()
 
     class Meta:
-        ordering = ('weekday', 'from_hour')
-        unique_together = ('weekday', 'from_hour', 'to_hour')
+        ordering = ("weekday", "from_hour")
+        unique_together = ("weekday", "from_hour", "to_hour")
 
     def clean(self):
         # Check if from_hour is less than to_hour
@@ -34,10 +34,10 @@ class OpeningHours(models.Model):
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return u'%s: %s - %s' % (self.get_weekday_display(), self.from_hour, self.to_hour)
+        return f"{self.get_weekday_display()}: {self.from_hour} - {self.to_hour}"
 
     def __unicode__(self):
-        return u'%s: %s - %s' % (self.get_weekday_display(), self.from_hour, self.to_hour)
+        return f"{self.get_weekday_display()}: {self.from_hour} - {self.to_hour}"
 
 
 class Address(models.Model):
@@ -54,7 +54,7 @@ class Address(models.Model):
 class Store(models.Model):
     name = models.CharField(max_length=100)
     address = models.ForeignKey(Address, on_delete=models.CASCADE)
-    opening_hours = models.ManyToManyField(OpeningHours, blank=True, related_name='stores')
+    opening_hours = models.ManyToManyField(OpeningHours, blank=True, related_name="stores")
 
     def __str__(self):
         return self.name
