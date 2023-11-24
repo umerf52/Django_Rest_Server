@@ -1,5 +1,5 @@
-from django.core.exceptions import ValidationError
 from django.db import models
+from rest_framework.exceptions import ValidationError
 
 # Create your models here.
 
@@ -53,7 +53,7 @@ class Address(models.Model):
 
 class Store(models.Model):
     name = models.CharField(max_length=100)
-    address = models.ForeignKey(Address, on_delete=models.CASCADE)
+    address = models.ForeignKey(Address, on_delete=models.CASCADE, null=True, related_name="stores")
     opening_hours = models.ManyToManyField(OpeningHours, blank=True, related_name="stores")
 
     def __str__(self):
