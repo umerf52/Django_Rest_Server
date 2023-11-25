@@ -7,44 +7,51 @@ A project to show REST API usage
 
 License: MIT
 
-## Settings
+## Set Up For Local Development
+### Set Up Database
+- Install PostgreSQL using `brew install postgresql`
+- Create a database cluster using `initdb /usr/local/var/postgres`
+- Start Postgres service using `brew services start postgresql`
+- To configure Postgres, use `psql`
+  - Create a new user using: `CREATE USER username WITH PASSWORD ‘password’;`
+  - Create a new database using: `CREATE DATABASE dbname;`
+  - Grant privileges to the user using: `GRANT ALL PRIVILEGES ON DATABASE dbname TO username;`
+  - Exit using `\q`
 
-Moved to [settings](http://cookiecutter-django.readthedocs.io/en/latest/settings.html).
+### Set Up Virtual Environment
+- Create a virtual environment using `python-m venv .venv`
+- Activate the virtual environment using `source .venv/bin/activate`
+- Install dependencies using `pip install -r requirements/local.txt`
 
-## Basic Commands
+### Set Up Environment Variables
+- Create a `.env` file in the root directory
+- Create an environment variable for the database `DATABASE_URL=postgres://username:password@localhost:5432/dbname`
 
-### Setting Up Your Users
+### Migrations
+- Make migrations using `python manage.py makemigrations`
+- Migrate using `python manage.py migrate`
 
-- To create a **normal user account**, just go to Sign Up and fill out the form. Once you submit it, you'll see a "Verify Your E-mail Address" page. Go to your console to see a simulated email verification message. Copy the link into your browser. Now the user's email should be verified and ready to go.
+### Superuser
+- Create a superuser using `python manage.py createsuperuser`
 
-- To create a **superuser account**, use this command:
+### Run Server
+- Run the server using `python manage.py runserver`
+- The API endpoint for Store should be available at `http://127.0.0.1:8000/api/stores/`
 
-      $ python manage.py createsuperuser
+## Sending Requests
+- Send a POST request to the endpoint `http://127.0.0.1:8000/auth-token/` to get an authentication token
+- The body of the request should contain the username and password like this:
+```
+{
+    "username": "admin@example.com",
+    "password": "password123"
+}
+```
+- Use this token to perform CRUD via `http://127.0.0.1:8000/api/stores/` endpoint
+- The token should be sent in the header of the request like this: `--header 'Authorization: Token token_value'`
 
-For convenience, you can keep your normal user logged in on Chrome and your superuser logged in on Firefox (or similar), so that you can see how the site behaves for both kinds of users.
 
-### Type checks
-
-Running type checks with mypy:
-
-    $ mypy django_store_assessment
-
-### Test coverage
-
-To run the tests, check your test coverage, and generate an HTML coverage report:
-
-    $ coverage run -m pytest
-    $ coverage html
-    $ open htmlcov/index.html
 
 #### Running tests with pytest
 
     $ pytest
-
-### Live reloading and Sass CSS compilation
-
-Moved to [Live reloading and SASS compilation](https://cookiecutter-django.readthedocs.io/en/latest/developing-locally.html#sass-compilation-live-reloading).
-
-## Deployment
-
-The following details how to deploy this application.
