@@ -22,7 +22,6 @@ class OpeningHours(models.Model):
 
     class Meta:
         ordering = ("weekday", "from_hour")
-        unique_together = ("weekday", "from_hour", "to_hour")
 
     def clean(self):
         # Check if from_hour is less than to_hour

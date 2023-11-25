@@ -5,7 +5,7 @@ from rest_framework.authtoken.models import Token
 from rest_framework.test import APIClient
 
 from django_store_assessment.stores.models import Store
-from django_store_assessment.stores.tests.factories import StoreFactory
+from django_store_assessment.stores.tests.factories import AddressFactory, OpeningHoursFactory, StoreFactory
 from django_store_assessment.users.tests.factories import UserFactory
 
 ALL_STORES_URL = reverse("store-list")
@@ -28,7 +28,7 @@ def api_client(token):
     return client
 
 
-class TestStoreAPI:
+class TestStoreViewSet:
     @pytest.mark.django_db
     def test_create_store(self, api_client):
         payload = {
@@ -116,6 +116,23 @@ class TestStoreAPI:
         assert response.data["name"] == "Example Store"
         assert not response.data["address"]
         assert not response.data["opening_hours"]
+
+    @pytest.mark.django_db
+    def test_create_2_stores_with_same_opening_hours(self, api_client):
+        opening_hours = {"weekday": 1, "from_hour": "08:00", "to_hour": "17:00"}
+        payload1 = {
+            "name": "Example Store 1",
+            "opening_hours": [opening_hours],
+        }
+        response1 = api_client.post(ALL_STORES_URL, payload1, format="json")
+        assert response1.status_code == status.HTTP_201_CREATED
+
+        payload2 = {
+            "name": "Example Store 2",
+            "opening_hours": [opening_hours],
+        }
+        response2 = api_client.post(ALL_STORES_URL, payload2, format="json")
+        assert response2.status_code == status.HTTP_201_CREATED
 
     @pytest.mark.django_db
     def test_create_store_without_name_fails(self, api_client):
@@ -242,7 +259,7 @@ class TestStoreAPI:
         client = APIClient()
         response = client.get(ALL_STORES_URL)
 
-        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+        assert response.status_code == status.HTTP_403_FORBIDDEN
 
     @pytest.mark.django_db
     def test_create_store_without_proper_token(self):
@@ -253,7 +270,7 @@ class TestStoreAPI:
 
         response = client.post(ALL_STORES_URL, payload, format="json")
 
-        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+        assert response.status_code == status.HTTP_403_FORBIDDEN
 
     @pytest.mark.django_db
     def test_update_store_without_proper_token(self):
@@ -267,7 +284,7 @@ class TestStoreAPI:
         url = reverse("store-detail", args=[store.id])
         response = client.put(url, payload, format="json")
 
-        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+        assert response.status_code == status.HTTP_403_FORBIDDEN
 
     @pytest.mark.django_db
     def test_delete_store_without_proper_token(self):
@@ -277,4 +294,45 @@ class TestStoreAPI:
         url = reverse("store-detail", args=[store.id])
         response = client.delete(url)
 
-        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+
+    @pytest.mark.django_db
+    def test_filter_by_name(self, api_client):
+        StoreFactory.create_batch(2)
+        store = StoreFactory.create(name="Example Store")
+
+        response = api_client.get(ALL_STORES_URL, {"name": "Example Store"})
+
+        assert response.status_code == status.HTTP_200_OK
+        assert len(response.data) == 1
+        assert response.data[0]["name"] == store.name
+
+    @pytest.mark.django_db
+    def test_filter_by_address(self, api_client):
+        StoreFactory.create_batch(2)
+        address = AddressFactory.create(street="123 Example St")
+        store = StoreFactory.create(
+            address=address,
+        )
+
+        response = api_client.get(ALL_STORES_URL, {"address__street": "123 Example St"})
+
+        assert response.status_code == status.HTTP_200_OK
+        assert len(response.data) == 1
+        assert response.data[0]["name"] == store.name
+
+    @pytest.mark.django_db
+    def test_filter_by_opening_hours(self, api_client):
+        temp_stores = StoreFactory.create_batch(2)
+        for ts in temp_stores:
+            ts.opening_hours.add(OpeningHoursFactory.create(weekday=2))
+        store = StoreFactory.create()
+        opening_hours1 = OpeningHoursFactory.create(weekday=1)
+        opening_hours2 = OpeningHoursFactory.create(weekday=2)
+        store.opening_hours.add(opening_hours1.id, opening_hours2.id)
+
+        response = api_client.get(ALL_STORES_URL, {"opening_hours__weekday": 1})
+
+        assert response.status_code == status.HTTP_200_OK
+        assert len(response.data) == 1
+        assert response.data[0]["name"] == store.name

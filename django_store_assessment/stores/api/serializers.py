@@ -30,7 +30,7 @@ class StoreSerializer(serializers.ModelSerializer):
         store = Store.objects.create(address=address, **validated_data)
 
         for oh_data in opening_hours_data:
-            opening_hour, created = OpeningHours.objects.get_or_create(**oh_data)
+            opening_hour, _ = OpeningHours.objects.get_or_create(**oh_data)
             store.opening_hours.add(opening_hour)
 
         return store
@@ -52,7 +52,7 @@ class StoreSerializer(serializers.ModelSerializer):
         opening_hours_data = validated_data.pop("opening_hours", [])
         instance.opening_hours.clear()
         for oh_data in opening_hours_data:
-            oh_obj, created = OpeningHours.objects.get_or_create(**oh_data)
+            oh_obj, _ = OpeningHours.objects.get_or_create(**oh_data)
             instance.opening_hours.add(oh_obj)
 
         # Update other fields of the Store instance
