@@ -178,7 +178,7 @@ class TestStoreViewSet:
         response = api_client.get(ALL_STORES_URL)
 
         assert response.status_code == status.HTTP_200_OK
-        assert len(response.data) == 2
+        assert len(response.data["results"]) == 2
 
     @pytest.mark.django_db
     def test_get_store(self, api_client):
@@ -262,6 +262,13 @@ class TestStoreViewSet:
         assert response.status_code == status.HTTP_403_FORBIDDEN
 
     @pytest.mark.django_db
+    def test_get_with_invalid_token(self):
+        client = APIClient()
+        client.credentials(HTTP_AUTHORIZATION="Token " + "some_invalid_token")
+        response = client.get(ALL_STORES_URL)
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+
+    @pytest.mark.django_db
     def test_create_store_without_proper_token(self):
         client = APIClient()
         payload = {
@@ -304,8 +311,8 @@ class TestStoreViewSet:
         response = api_client.get(ALL_STORES_URL, {"name": "Example Store"})
 
         assert response.status_code == status.HTTP_200_OK
-        assert len(response.data) == 1
-        assert response.data[0]["name"] == store.name
+        assert len(response.data["results"]) == 1
+        assert response.data["results"][0]["name"] == store.name
 
     @pytest.mark.django_db
     def test_filter_by_address(self, api_client):
@@ -318,8 +325,8 @@ class TestStoreViewSet:
         response = api_client.get(ALL_STORES_URL, {"address__street": "123 Example St"})
 
         assert response.status_code == status.HTTP_200_OK
-        assert len(response.data) == 1
-        assert response.data[0]["name"] == store.name
+        assert len(response.data["results"]) == 1
+        assert response.data["results"][0]["name"] == store.name
 
     @pytest.mark.django_db
     def test_filter_by_opening_hours(self, api_client):
@@ -334,5 +341,25 @@ class TestStoreViewSet:
         response = api_client.get(ALL_STORES_URL, {"opening_hours__weekday": 1})
 
         assert response.status_code == status.HTTP_200_OK
-        assert len(response.data) == 1
-        assert response.data[0]["name"] == store.name
+        assert len(response.data["results"]) == 1
+        assert response.data["results"][0]["name"] == store.name
+
+    @pytest.mark.django_db
+    def test_get_paginated_results(self, api_client):
+        StoreFactory.create_batch(11)
+
+        response = api_client.get(ALL_STORES_URL)
+
+        assert response.status_code == status.HTTP_200_OK
+        assert len(response.data["results"]) == 10
+        assert response.data["count"] == 11
+        assert response.data["next"] is not None
+        assert response.data["previous"] is None
+
+        # Get the next page
+        response = api_client.get(response.data["next"])
+        assert response.status_code == status.HTTP_200_OK
+        assert len(response.data["results"]) == 1
+        assert response.data["count"] == 11
+        assert response.data["next"] is None
+        assert response.data["previous"] is not None
