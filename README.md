@@ -65,8 +65,7 @@ GET `http://127.0.0.1:8000/api/stores/`
 GET `http://127.0.0.1:8000/api/stores/id/`
 
 ### Create Store
-POST `http://127.0.0.1:8000/api/stores/`
-
+POST `http://127.0.0.1:8000/api/stores/` \
 Body:
 ```json
 {
@@ -87,7 +86,7 @@ Body:
 ```
 
 ### Update Store
-PUT `http://127.0.0.1:8000/api/stores/id/`
+PUT `http://127.0.0.1:8000/api/stores/id/` \
 Body:
 ```json
 {
