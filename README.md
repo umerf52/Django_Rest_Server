@@ -55,3 +55,58 @@ License: MIT
 #### Running tests with pytest
 
     $ pytest
+
+
+## Samples
+### Get All Stores
+GET `http://127.0.0.1:8000/api/stores/`
+
+### Get Store By ID
+GET `http://127.0.0.1:8000/api/stores/id/`
+
+### Create Store
+POST `http://127.0.0.1:8000/api/stores/`
+
+Body:
+```json
+{
+  "name": "Example Store",
+  "opening_hours": [{
+      "weekday": 1,
+      "from_hour": "06:00",
+      "to_hour": "08:00"
+    }],
+  "address": {
+    "street": "123 Example St",
+    "city": "Example City",
+    "state": "EX",
+    "postal_code": "12345",
+    "country": "Exampleland"
+  }
+}
+```
+
+### Update Store
+PUT `http://127.0.0.1:8000/api/stores/id/`
+Body:
+```json
+{
+    "name": "New Name",
+    "opening_hours": [{
+      "weekday": 2,
+      "from_hour": "08:00",
+      "to_hour": "14:00"
+    }],
+    "address": {
+      "street": "New Street",
+      "city": "New City",
+      "state": "NS",
+      "postal_code": "67890",
+      "country": "Newland"
+    }
+}
+
+```
+
+### Delete Store
+DELETE `http://127.0.0.1:8000/api/stores/id/`
